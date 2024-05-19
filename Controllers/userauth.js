@@ -13,9 +13,13 @@ export const authUser = asyncHandler(async (req, res, next) => {
     return res.status(401).json({ message: 'Incorrect login or password' });
   }
 
+  if (user.status === 'disabled') {
+    return res.status(403).json({ message: 'Veuillez contacter votre administrateur pour activer votre compte' });
+  }
+
   // Generate JWT token
   const token = jwt.sign(
-    { id: user._id, login: user.login },
+    { id: user._id, login: user.login, role: user.role },
     JWT_SECRET,
     { expiresIn: JWT_EXPIRES_IN }
   );
