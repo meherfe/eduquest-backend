@@ -1,16 +1,15 @@
+// Import necessary modules
 import express from 'express';
 import mongoose from 'mongoose';
-import morgan from 'morgan';
+import morgan from 'morgan'; // Logging middleware
 import cors from 'cors';
 import userRoutes from './Routes/user.js';
 import { notfound } from './middlewares/notfound.js'; // Assuming you have a notfound middleware
 
-
-
 const app = express();
 
 // Middleware setup
-app.use(morgan('dev'));
+app.use(morgan('dev')); // Use morgan middleware for logging
 app.use(cors());
 app.use(express.json());
 
@@ -18,7 +17,7 @@ app.use(express.json());
 const port = process.env.PORT || 9090;
 const databasename = 'eduquest';
 
-mongoose.set('debug', true);
+mongoose.set('debug', true); // Enable Mongoose debugging
 mongoose.promise = global.Promise;
 
 mongoose
@@ -27,17 +26,17 @@ mongoose
     console.log(`Connected to ${databasename}`);
   })
   .catch((err) => {
-    console.log('Error connecting to the database:', err);
+    console.error('Error connecting to the database:', err); // Log error message
   });
 
-  app.use(userRoutes);
+app.use(userRoutes);
 
-  // 404 Not Found middleware
+// 404 Not Found middleware
 app.use(notfound);
 
 // Error handling middleware
 app.use((err, req, res, next) => {
-  console.error(err.stack);
+  console.error(err.stack); // Log error stack trace
   res.status(500).json({ error: 'Internal Server Error' });
 });
 

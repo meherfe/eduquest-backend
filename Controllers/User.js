@@ -1,9 +1,20 @@
 import User from '../Modules/User';
 import { validationResult } from 'express-validator';
 import bcrypt from 'bcrypt';
+import nodemailer from 'nodemailer';
+import crypto from 'crypto';
 
-// Add User function (unchanged)
-export function addUser(req, res) {
+const transporter = nodemailer.createTransport({
+    host: 'smtp.gmail.com',
+    port: 587,
+    secure: false,
+    auth: {
+        user: 'meher.fe08@gmail.com',
+        pass: 'kbijoebavdtepnzx' // Utilisez le mot de passe spécifique à l'application
+    }
+});
+
+export async function addUser(req, res) {
     try {
         const errors = validationResult(req);
 
@@ -14,44 +25,74 @@ export function addUser(req, res) {
 
         const { nom, prenom, email, login, password, phone, role } = req.body;
 
-        // Create a new user instance
+        // Hasher le mot de passe
+        const hashedPassword = await bcrypt.hash(password, 10);
+
+        // Générer un token de vérification
+        const verificationToken = crypto.randomBytes(32).toString('hex');
+
         const newUser = new User({
             nom,
             prenom,
             email,
             login,
-            password,
+            password: hashedPassword,
             phone,
             role,
+            status: 'disabled',
+            verificationToken  // Ajouter le token de vérification au modèle utilisateur
         });
 
-        // Save the user to the database
-        newUser.save()
-            .then(() => {
-                res.status(200).json(newUser);
-            })
+        await newUser.save();
+
+        // Envoyer un email de confirmation
+        const verificationLink = `http://localhost:9090/verify-email?token=${verificationToken}&email=${email}`;
+        const mailOptions = {
+            from: 'meher.fe08@gmail.com',
+            to: email,
+            subject: 'Account Verification',
+            text: `Your account has been added. Please verify your email by clicking on the link below:\n${verificationLink}`
+        };
+
+        transporter.sendMail(mailOptions, (error, info) => {
+            if (error) {
+                console.error('Error sending email:', error);
+            } else {
+                console.log('Email sent:', info.response);
+            }
+        });
+
+        res.status(200).json(newUser);
     } catch (error) {
         console.error('Error adding user:', error);
         res.status(500).json({ error: error.message });
     }
 }
 
-// Delete User function
-export function deleteUser(req, res) {
+// Update user status to archived function
+export const archiveUser = async (req, res) => {
     const userId = req.params.id;
 
-    User.findByIdAndDelete(userId)
-        .then(deletedUser => {
-            if (!deletedUser) {
-                return res.status(404).json({ error: 'User not found' });
-            }
-            res.status(200).json({ message: 'User deleted successfully' });
-        })
-        .catch(error => {
-            console.error('Error deleting user:', error);
-            res.status(500).json({ error: error.message });
+    try {
+        const user = await User.findById(userId);
+
+        if (!user) {
+            return res.status(404).json({ error: 'utilisateur non trouvé' });
+        }
+
+        user.status = 'archived';
+        await user.save();
+
+        res.status(200).json({
+            message: 'le status de lutilisateur est : archived',
+            user
         });
-}
+    } catch (error) {
+        console.error('Error archiving user:', error);
+        res.status(500).json({ error: error.message });
+    }
+};
+
 
 
 // Get All Users function
@@ -84,7 +125,7 @@ export function updateUser(req, res) {
     User.findById(userId)
         .then(async user => {
             if (!user) {
-                return res.status(404).json({ error: 'User not found' });
+                return res.status(404).json({ error: 'utilisateur non trouvé' });
             }
 
             // Update user fields
@@ -92,7 +133,7 @@ export function updateUser(req, res) {
             if (prenom) user.prenom = prenom;
             if (email) user.email = email;
             if (login) user.login = login;
-            if (password) user.password = await bcrypt.hash(password, 12);
+            if (password) user.password ;
             if (phone) user.phone = phone;
             if (role) user.role = role;
             if (status) user.status = status;
@@ -105,3 +146,9 @@ export function updateUser(req, res) {
             res.status(500).json({ error: error.message });
         });
 }
+
+
+
+
+
+
