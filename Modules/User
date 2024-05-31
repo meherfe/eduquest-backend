@@ -15,10 +15,10 @@ const userSchema = new Schema({
   },
   status: {
     type: String,
-    enum: ['disabled', 'enabled', 'archived'], // Include 'archived' in the enum
+    enum: ['disabled', 'enabled', 'archived'], 
     default: 'disabled'
   },
-  verificationToken: { type: String } // Add the verification token field
+  verificationToken: { type: String } 
 }, { collection: 'User' });
 
 const User = model('User', userSchema);

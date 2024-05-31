@@ -3,7 +3,7 @@ import express from 'express';
 import mongoose from 'mongoose';
 import morgan from 'morgan'; // Logging middleware
 import cors from 'cors';
-import userRoutes from './Routes/user.js';
+import userRoutes from './Routes/route.js';
 import { notfound } from './middlewares/notfound.js'; // Assuming you have a notfound middleware
 
 const app = express();

@@ -15,6 +15,8 @@ const transporter = nodemailer.createTransport({
 });
 
 export async function addUser(req, res) {
+
+   
     try {
         const errors = validationResult(req);
 
@@ -31,6 +33,13 @@ export async function addUser(req, res) {
         // Générer un token de vérification
         const verificationToken = crypto.randomBytes(32).toString('hex');
 
+        let status = 'disabled';
+        console.log('Role:', role);
+        // If the role is enseignant, set the status to enabled by default
+        if (role === 'enseignant') {
+            status = 'enabled';
+        }
+
         const newUser = new User({
             nom,
             prenom,
@@ -39,7 +48,7 @@ export async function addUser(req, res) {
             password: hashedPassword,
             phone,
             role,
-            status: 'disabled',
+            status,
             verificationToken  // Ajouter le token de vérification au modèle utilisateur
         });
 
