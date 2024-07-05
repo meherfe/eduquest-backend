@@ -7,9 +7,9 @@ const JWT_SECRET = 'master2024';
 const JWT_EXPIRES_IN = '1h';
 
 export const authUser = asyncHandler(async (req, res, next) => {
-  const { login, password } = req.body;
+  const { email, password } = req.body;
 
-  const user = await User.findOne({ login });
+  const user = await User.findOne({ login: email });
 
   if (!user) {
     return res.status(401).json({ message: 'login ou mot de passe incorrect' });
@@ -38,6 +38,14 @@ export const authUser = asyncHandler(async (req, res, next) => {
 
   res.status(200).json({
     message: 'Authentication successful',
-    token: token
+    token: token,
+    role: user.role  // Include the role in the response
   });
 });
+
+// Logout method remains the same
+export function logout(req, res) {
+  res.clearCookie('undefined'); // Replace 'token' with your cookie name
+  res.status(200).json({ message: 'Logout successful' });
+  console.log('Logout successful');
+}

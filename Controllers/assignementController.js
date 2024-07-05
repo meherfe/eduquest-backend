@@ -48,10 +48,16 @@ export const deleteAssignment = async (req, res) => {
         res.status(500).json({ message: 'Error deleting assignment', error });
     }
 };
+
+
+
+// controller.js
+
+
 export const getAssignmentByCategory = async (req, res) => {
     try {
-        const { category } = req.query;
-        const assignments = await Assignment.find({ category: category });
+        const { categoryId } = req.params;
+        const assignments = await Assignment.find({ category: categoryId });
         res.status(200).json(assignments);
     } catch (error) {
         res.status(500).json({ message: 'Error fetching assignments by category', error });
